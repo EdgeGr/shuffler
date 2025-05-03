@@ -144,7 +144,7 @@ client.on(Events.InteractionCreate, async interaction => {
   startTournament();
   await interaction.reply({ content: '✅ The game has started!', ephemeral: true });
 }
-
+});
 // Reaction handler to track players joining
 client.on('messageReactionAdd', async (reaction, user) => {
   if (user.bot) return;
