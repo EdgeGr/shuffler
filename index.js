@@ -125,20 +125,24 @@ client.on(Events.InteractionCreate, async interaction => {
 
   // /startgame command - Manually start the game
   if (interaction.commandName === 'startgame') {
-    if (interaction.user.id !== game.hostId) {
-      await interaction.reply({ content: '❌ Only the host can start the game!', ephemeral: true });
-      return;
-    }
-
-    if (!game || game.isRunning) {
-      await interaction.reply({ content: '⚠️ No game is being prepared or the game has already started.', ephemeral: true });
-      return;
-    }
-
-    startTournament();
-    await interaction.reply({ content: '✅ The game has started!', ephemeral: true });
+  if (!game) {
+    await interaction.reply({ content: '⚠️ No game session found. Start a new game with `/battle` first.', ephemeral: true });
+    return;
   }
-});
+
+  if (interaction.user.id !== game.hostId) {
+    await interaction.reply({ content: '❌ Only the host can start the game!', ephemeral: true });
+    return;
+  }
+
+  if (game.isRunning) {
+    await interaction.reply({ content: '⚠️ The game has already started.', ephemeral: true });
+    return;
+  }
+
+  startTournament();
+  await interaction.reply({ content: '✅ The game has started!', ephemeral: true });
+}
 
 // Reaction handler to track players joining
 client.on('messageReactionAdd', async (reaction, user) => {
