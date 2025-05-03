@@ -39,7 +39,8 @@ function nextRound() {
 
   game.round++;
   const easyWords = words.filter(w => w.length >= 4 && w.length <= 7 && /^[a-z]+$/.test(w));
-  game.currentWord = easyWords[Math.floor(Math.random() * easyWords.length)];  const scrambled = shuffleWord(game.currentWord);
+game.currentWord = easyWords[Math.floor(Math.random() * easyWords.length)];
+const scrambled = shuffleWord(game.currentWord);
   game.startTime = Date.now();
 
   game.channel.send(`🔤 **Round ${game.round}**: Unscramble this word: **${scrambled}** (60s)`);
