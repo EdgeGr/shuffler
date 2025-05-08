@@ -1,5 +1,17 @@
-const { Client, GatewayIntentBits, Events, Partials, Collection } = require('discord.js');
+const {
+  Client,
+  GatewayIntentBits,
+  Events,
+  Partials,
+  Collection,
+  REST,
+  Routes,
+  SlashCommandBuilder
+} = require('discord.js');
 const words = require('an-array-of-english-words');
+const rest = new REST({ version: '10' }).setToken(process.env.token);
+
+
 
 const client = new Client({
   intents: [
@@ -9,6 +21,50 @@ const client = new Client({
     GatewayIntentBits.GuildMessageReactions
   ],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction]
+});
+
+const commands = [
+  new SlashCommandBuilder()
+    .setName('battle')
+    .setDescription('Start a new word battle game')
+    .addStringOption(option =>
+      option.setName('type')
+        .setDescription('Type of game')
+        .setRequired(true)
+        .addChoices(
+          { name: 'Quick (1 round)', value: 'quick' },
+          { name: 'Tournament (multiple rounds)', value: 'tournament' }
+        ))
+    .addStringOption(option =>
+      option.setName('start')
+        .setDescription('When should the game start?')
+        .setRequired(true)
+        .addChoices(
+          { name: 'Manual (/startgame)', value: 'manual' },
+          { name: 'Automatic (after 2 mins)', value: 'auto' }
+        ))
+    .addIntegerOption(option =>
+      option.setName('rounds')
+        .setDescription('Number of rounds (if tournament)')
+        .setRequired(false)),
+        
+  new SlashCommandBuilder()
+    .setName('startgame')
+    .setDescription('Start the game early (only the host can use this)')
+].map(cmd => cmd.toJSON());
+
+// ⚡ Automatically register commands when bot joins a server
+client.on('guildCreate', async (guild) => {
+  try {
+    console.log(`🔁 Bot added to ${guild.name} (${guild.id}) — deploying commands...`);
+    await rest.put(
+      Routes.applicationGuildCommands(client.user.id, guild.id),
+      { body: commands }
+    );
+    console.log(`✅ Commands deployed to ${guild.name}`);
+  } catch (err) {
+    console.error(`❌ Failed to deploy commands to ${guild.name}`, err);
+  }
 });
 
 let game = null;
@@ -180,4 +236,8 @@ client.on('messageCreate', message => {
   }
 });
 
-client.login(process.env.token);
+client.login(process.env.token)
+  .catch(err => {
+    console.error('❌ Failed to log in:', err);
+    process.exit(1); 
+  });
